@@ -1,47 +1,44 @@
-
 #' Let a validator fail without an error
-#' @param  x an expression that should tipically return a validator result but in some, 
+#' @param  x an expression that should tipically return a validator result but in some,
 #'           yet to be discovered, exceptional cases, it does not.
 #' @param nam an optional name to help identify the failty validator later.
 #' @export
-#' @examples 
+#' @examples
 #' x = data.table(id = 1:10)
 #' wrong_output_validator <- nrow
 #' faulty_validator <- function(x) foo(x)
-#' 
+#'
 #' faulty_validator (x) |> try_validator(nam = 'foo')
 #' nrow(x) |> try_validator()
-#' 
+#'
 try_validator <- function(..., nam = "") {
-
   ev = try(..., silent = TRUE)
-  
+
   if (inherits(ev, "try-error")) {
     o = data.frame(
-      rowid = as.character(NA), variable = as.character(NA),
-      reason = glue("Validator {dQuote(nam)} returned an error: {str_trunc(ev, 30)}") |>
-               as.character()
+      rowid = as.character(NA),
+      variable = as.character(NA),
+      reason = glue(
+        "Validator {dQuote(nam)} returned an error: {str_trunc(ev, 30)}"
+      ) |>
+        as.character()
     )
-  } else 
-  if (!all(c("rowid", "variable", "reason") %in% names(ev))) {
-
+  } else if (!all(c("rowid", "variable", "reason") %in% names(ev))) {
     o <- data.frame(
-      rowid = as.character(NA), variable = as.character(NA),
-      reason = glue("Validator {dQuote(nam)} seem to work but it does not return the correct format. ") |>
+      rowid = as.character(NA),
+      variable = as.character(NA),
+      reason = glue(
+        "Validator {dQuote(nam)} seem to work but it does not return the correct format. "
+      ) |>
         str_squish() |>
         as.character()
     )
-
   } else {
-     o = ev
+    o = ev
   }
-  
- o
 
-
+  o
 }
-
-
 
 
 #' Evaluate Validators safely
@@ -54,8 +51,11 @@ evalidators <- function(L) {
     o <- o[, .(rowid = paste(rowid, collapse = ",")), by = .(variable, reason)]
   } else {
     o <- data.frame(
-      rowid = NA, variable = NA,
-      reason = glue("Oops! validators need validation, Error: {dQuote( str_squish(o))}")
+      rowid = NA,
+      variable = NA,
+      reason = glue(
+        "Oops! validators need validation, Error: {dQuote( str_squish(o))}"
+      )
     )
   }
 
@@ -88,13 +88,13 @@ evalidators <- function(L) {
 #'     ,
 #'     # second validator
 #'     is.na_validator(x)
-#'     , 
+#'     ,
 #'     # faulty validator
 #'     nrow(x) |> try_validator(nam = 'wrong output')
-#' 
+#'
 #'   )
-#' 
-#' 
+#'
+#'
 #' }
 #'
 #' inspector(x) |> evalidators()
@@ -105,10 +105,12 @@ inspector <- function(x) {
 
 #' @export
 inspector.default <- function(x) {
-  data.frame(rowid = NA, variable = NA, reason = "Validators are not available for this table!")
+  data.frame(
+    rowid = NA,
+    variable = NA,
+    reason = "Validators are not available for this table!"
+  )
 }
-
-
 
 
 #' @title   Inspector loader
